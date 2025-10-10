@@ -1,0 +1,6 @@
+# Virtual environments
+.venv
+venv/
+
+# Distribution folders
+dist/
