@@ -19,6 +19,7 @@ def main():
             print("Спасибо за игру! До свидания!")
             break
         utils.process_command(game_state, command)
+    
     if game_state['game_over']:
         print(f"\nИгра завершена! Вы сделали {game_state['steps_taken']} шагов.")
         print("Надеемся, вам понравилось приключение!")
