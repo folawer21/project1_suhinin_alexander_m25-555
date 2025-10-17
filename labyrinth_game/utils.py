@@ -28,7 +28,6 @@ def show_help():
     """Показывает список доступных команд"""
     print("\nДоступные команды:")
     for command, description in constants.COMMANDS.items():
-        # Форматируем вывод с выравниванием слева и 16 пробелами
         print(f"  {command:<16} - {description}")
 
 
@@ -38,7 +37,6 @@ def process_command(game_state, command):
     main_command = parts[0]
     argument = parts[1] if len(parts) > 1 else ""
     
-    # Обработка односложных команд движения
     directions = ['north', 'south', 'east', 'west', 'up', 'down']
     if main_command in directions:
         main_command = 'go'
@@ -53,10 +51,8 @@ def process_command(game_state, command):
         
         case 'идти' | 'go':
             if argument:
-                # Сохраняем старую комнату для проверки перемещения
                 old_room = game_state['current_room']
                 success = player_actions.move_player(game_state, argument)
-                # Если перемещение успешно, запускаем случайное событие
                 if success and game_state['current_room'] != old_room:
                     random_event(game_state)
             else:
@@ -100,16 +96,11 @@ def process_command(game_state, command):
 
 def pseudo_random(seed, modulo):
     """Генерирует псевдослучайное число на основе синуса"""
-    # Берем синус от seed, умноженного на большое число
     sin_value = math.sin(seed * 12.9898)
-    
-    # Умножаем на другое большое число
     multiplied = sin_value * 43758.5453
     
-    # Получаем дробную часть
     fractional = multiplied - math.floor(multiplied)
     
-    # Приводим к нужному диапазону и возвращаем целое число
     result = int(fractional * modulo)
     return result
 
@@ -121,7 +112,6 @@ def trigger_trap(game_state):
     inventory = game_state['player_inventory']
     
     if inventory:
-        # Выбираем случайный предмет для удаления
         item_index = pseudo_random(game_state['steps_taken'], len(inventory))
         lost_item = inventory.pop(item_index)
         print(f"💥 В суматохе вы потеряли: {lost_item}!")
@@ -131,11 +121,10 @@ def trigger_trap(game_state):
         else:
             print("📦 Ваш инвентарь теперь пуст!")
     else:
-        # Если инвентарь пуст, игрок получает урон
         print("💥 Вы получили удар от ловушки!")
         damage_chance = pseudo_random(game_state['steps_taken'], 10)
         
-        if damage_chance < 3:  # 30% шанс проигрыша
+        if damage_chance < 3:
             print("❌ Критическое попадание! Игра окончена.")
             game_state['game_over'] = True
         else:
@@ -144,11 +133,9 @@ def trigger_trap(game_state):
 
 def random_event(game_state):
     """Случайные события во время перемещения игрока"""
-    # Проверяем, произойдет ли событие (10% шанс)
     event_chance = pseudo_random(game_state['steps_taken'], 10)
     
-    if event_chance == 0:  # Событие происходит
-        # Выбираем тип события
+    if event_chance == 0:
         event_type = pseudo_random(game_state['steps_taken'] + 1, 3)
         
         current_room = game_state['current_room']
@@ -156,7 +143,6 @@ def random_event(game_state):
         inventory = game_state['player_inventory']
         
         if event_type == 0:
-            # Сценарий 1: Находка
             print("\n✨ Вы заметили что-то блестящее на полу...")
             print("💰 Вы нашли монетку!")
             if 'items' not in room_data:
@@ -164,7 +150,6 @@ def random_event(game_state):
             room_data['items'].append('coin')
             
         elif event_type == 1:
-            # Сценарий 2: Испуг
             print("\n👂 Вы слышите странный шорох в темноте...")
             if 'sword' in inventory:
                 print("⚔️ Вы достаете меч, и существо убегает!")
@@ -172,7 +157,6 @@ def random_event(game_state):
                 print("😨 Вам стало не по себе...")
                 
         elif event_type == 2:
-            # Сценарий 3: Срабатывание ловушки
             print("\n⚠️ Вы чувствуете, что наступили на подозрительную плиту...")
             if current_room == 'trap_room' and 'torch' not in inventory:
                 print("🔦 Без факела вы не заметили ловушку вовремя!")
@@ -196,7 +180,6 @@ def solve_puzzle(game_state):
     print(f"\n{question}")
     user_answer = player_actions.get_input("Ваш ответ: ").strip().lower()
     
-    # Проверка альтернативных вариантов ответа
     is_correct = False
     if correct_answer in constants.PUZZLE_ALTERNATIVES:
         alternatives = constants.PUZZLE_ALTERNATIVES[correct_answer]
@@ -206,11 +189,8 @@ def solve_puzzle(game_state):
     
     if is_correct:
         print("🎉 Верно! Загадка решена.")
-        
-        # Убираем загадку после решения
         room_data['puzzle'] = None
         
-        # Награды за решение загадок в зависимости от комнаты
         if current_room == 'hall':
             print("🎁 Пьедестал открывается! Вы получаете 'silver_key'!")
             game_state['player_inventory'].append('silver_key')
@@ -237,7 +217,6 @@ def solve_puzzle(game_state):
         return True
     else:
         print("❌ Неверно.")
-        # В trap_room неверный ответ активирует ловушку
         if current_room == 'trap_room':
             print("💀 Неправильный ответ активирует ловушку!")
             trigger_trap(game_state)
@@ -261,7 +240,6 @@ def attempt_open_treasure(game_state):
         print("Сундук с сокровищами уже открыт!")
         return True
     
-    # Проверка наличия ключа
     if 'rusty_key' in game_state['player_inventory']:
         print("🔑 Вы применяете ключ, и замок щёлкает. Сундук открыт!")
         items.remove('treasure_chest')
@@ -269,7 +247,6 @@ def attempt_open_treasure(game_state):
         game_state['game_over'] = True
         return True
     
-    # Если ключа нет, предлагаем ввести код
     print("🔒 Сундук заперт. У вас нет подходящего ключа.")
     choice_input = "Попробовать ввести код? (да/нет): "
     choice = player_actions.get_input(choice_input).strip().lower()
@@ -281,7 +258,6 @@ def attempt_open_treasure(game_state):
             print(f"\n{question}")
             user_code = player_actions.get_input("Введите код: ").strip()
             
-            # Проверка альтернативных вариантов для кода
             is_correct = False
             if correct_answer in constants.PUZZLE_ALTERNATIVES:
                 alternatives = constants.PUZZLE_ALTERNATIVES[correct_answer]
