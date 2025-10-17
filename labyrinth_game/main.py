@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-from labyrinth_game import constants, player_actions, utils
-    
+from labyrinth_game import player_actions, utils
+
+
 def main():
     print("Добро пожаловать в Лабиринт сокровищ!")
 
@@ -14,16 +15,18 @@ def main():
     utils.describe_current_room(game_state)
 
     while not game_state['game_over']:
-        command = player_actions.get_input("\nЧто вы хотите сделать? ").strip().lower()
+        command = player_actions.get_input(
+            "\nЧто вы хотите сделать? "
+        ).strip().lower()
         if command == "quit":
             print("Спасибо за игру! До свидания!")
             break
         utils.process_command(game_state, command)
     
     if game_state['game_over']:
-        print(f"\nИгра завершена! Вы сделали {game_state['steps_taken']} шагов.")
+        steps = game_state['steps_taken']
+        print(f"\nИгра завершена! Вы сделали {steps} шагов.")
         print("Надеемся, вам понравилось приключение!")
-
 
 
 if __name__ == "__main__":

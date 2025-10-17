@@ -1,5 +1,6 @@
 from . import constants, utils
 
+
 def show_inventory(game_state):
     """Отображает содержимое инвентаря игрока"""
     inventory = game_state['player_inventory']
@@ -11,14 +12,21 @@ def show_inventory(game_state):
         for i, item in enumerate(inventory, 1):
             print(f"  {i}. {item}")
 
+
 def get_input(prompt="> "):
     try:
-        user_input = input(prompt).strip()
-        return user_input
+        user_input = input(prompt)
+        # Принудительно кодируем и декодируем для исправления проблем с кодировкой
+        user_input = user_input.encode('utf-8', errors='ignore').decode('utf-8')
+        return user_input.strip()
     except (KeyboardInterrupt, EOFError):
         print("\nВыход из игры.")
         return "quit"
+    except Exception as e:
+        print(f"\nОшибка ввода: {e}. Пожалуйста, попробуйте еще раз.")
+        return get_input(prompt)
     
+
 def move_player(game_state, direction):
     """Перемещает игрока в указанном направлении"""
     current_room = game_state['current_room']
@@ -31,7 +39,8 @@ def move_player(game_state, direction):
         # Проверка на переход в treasure_room
         if target_room == 'treasure_room':
             if 'rusty_key' in game_state['player_inventory']:
-                print("🔑 Вы используете найденный ключ, чтобы открыть путь в комнату сокровищ.")
+                msg = "🔑 Вы используете найденный ключ, чтобы открыть путь."
+                print(msg)
                 game_state['current_room'] = target_room
                 game_state['steps_taken'] += 1
                 utils.describe_current_room(game_state)
@@ -50,6 +59,7 @@ def move_player(game_state, direction):
         print("Нельзя пойти в этом направлении.")
         return False
     
+
 def take_item(game_state, item_name):
     """Позволяет игроку подобрать предмет из комнаты"""
     current_room = game_state['current_room']
@@ -65,6 +75,7 @@ def take_item(game_state, item_name):
         print("Такого предмета здесь нет.")
         return False
     
+
 def use_item(game_state, item_name):
     """Позволяет игроку использовать предмет из инвентаря"""
     inventory = game_state['player_inventory']
@@ -74,20 +85,24 @@ def use_item(game_state, item_name):
         return False
     
     if item_name == 'torch':
-        print("🔥 Вы зажгли факел. Стало светлее, теперь вы можете разглядеть скрытые детали.")
+        msg = "🔥 Вы зажгли факел. Стало светлее."
+        print(msg)
     
     elif item_name == 'sword':
-        print("⚔️ Вы почувствовали уверенность, держа меч в руках. Теперь вы готовы к любым опасностям!")
+        msg = "⚔️ Вы почувствовали уверенность, держа меч в руках."
+        print(msg)
     
     elif item_name == 'bronze_box':
         if 'small_key' not in inventory:
-            print("🎁 Вы открыли бронзовую шкатулку. Внутри вы нашли маленький ключ!")
+            msg = "🎁 Вы открыли бронзовую шкатулку. Нашли ключ!"
+            print(msg)
             game_state['player_inventory'].append('small_key')
         else:
             print("📦 Шкатулка уже пуста.")
     
     elif item_name == 'ancient_book':
-        print("📖 Вы читаете древнюю книгу. Она содержит знания о магии лабиринта.")
+        msg = "📖 Вы читаете древнюю книгу о магии лабиринта."
+        print(msg)
     
     elif item_name == 'healing_potion':
         print("🧪 Вы выпили зелье лечения. Вы чувствуете прилив сил!")
